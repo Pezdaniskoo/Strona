@@ -1,45 +1,48 @@
 # ToDo List – Backend + Admin Panel (Laravel 11)
 
-## Start (jedna komenda, bez `docker exec`)
+## One-command start (bez `docker exec`)
+
+Po prostu odpal:
 
 ```bash
 docker compose up -d --build
 ```
 
-Po uruchomieniu otwórz:
-- GUI / aplikacja: **http://localhost:8080**
-- Mailpit: **http://localhost:8025**
+I to wszystko ✅
 
-## Ważne
-Przy **pierwszym uruchomieniu** kontener sam:
-- dociąga brakujący szkielet Laravel 11 (jeśli repo jeszcze go nie ma),
-- instaluje composer/npm dependencies,
-- buduje assety,
-- generuje APP_KEY,
-- uruchamia migracje i seedy.
+Co dzieje się automatycznie:
+- kopiowanie `.env` (jeśli nie istnieje),
+- `composer install`,
+- `npm install`,
+- `npm run build`,
+- `php artisan key:generate`,
+- `php artisan migrate --seed`,
+- start PHP-FPM,
+- start workera kolejki,
+- start schedulera.
 
-To może potrwać kilka minut.
+## Adresy
+- Aplikacja: http://localhost:8000
+- Mailpit (podgląd maili): http://localhost:8025
 
-## Konto administratora
+## Konto admina (seed)
 - email: `admin@todo-list.local`
 - hasło: `Admin123!`
 
-## Jeśli strona nie odpowiada od razu
-Sprawdź logi i poczekaj aż bootstrap się skończy:
+## Zatrzymanie
+```bash
+docker compose down
+```
 
+## Reset danych (wraz z bazą)
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+## Podgląd logów
 ```bash
 docker compose logs -f app
 docker compose logs -f queue
 docker compose logs -f scheduler
-```
-
-## Komendy pomocnicze
-
-```bash
-# stop
-docker compose down
-
-# pełny reset danych
-docker compose down -v
-docker compose up -d --build
 ```
