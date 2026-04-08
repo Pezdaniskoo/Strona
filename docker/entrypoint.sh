@@ -22,17 +22,12 @@ if [ ! -f public/build/manifest.json ]; then
   npm run build
 fi
 
-php artisan key:generate --force --no-interaction || true
+php artisan key:generate --force --no-interaction
 
 until php artisan migrate --force --seed --no-interaction; do
   echo "[entrypoint] Waiting for database..."
   sleep 3
 done
-
-if [ "$#" -gt 0 ]; then
-  echo "[entrypoint] Bootstrapping finished. Starting: $*"
-  exec "$@"
-fi
 
 echo "[entrypoint] Bootstrapping finished. Starting php-fpm..."
 exec php-fpm
