@@ -1,0 +1,90 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo_app
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "8080:8080"
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - todo_network
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=1"]
+    depends_on:
+      - app
+      - mysql
+      - redis
+    networks:
+      - todo_network
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      - app
+      - mysql
+    networks:
+      - todo_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: todo_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: todo_list
+      MYSQL_USER: todo
+      MYSQL_PASSWORD: todo
+      MYSQL_ROOT_PASSWORD: root
+      TZ: UTC
+    ports:
+      - "33066:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - todo_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: todo_redis
+    restart: unless-stopped
+    ports:
+      - "63790:6379"
+    networks:
+      - todo_network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: todo_mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - todo_network
+
+volumes:
+  mysql_data:
+
+networks:
+  todo_network:
+    driver: bridge
