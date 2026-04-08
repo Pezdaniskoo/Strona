@@ -1,35 +1,48 @@
-# ToDo List – Laravel 11 Backend + Admin
+# ToDo List – Backend + Admin Panel (Laravel 11)
 
-## Uruchomienie (jedna komenda)
+## One-command start (bez `docker exec`)
+
+Po prostu odpal:
 
 ```bash
 docker compose up -d --build
 ```
 
-Po starcie:
-- Aplikacja: `http://localhost:8080`
-- Mailpit: `http://localhost:8025`
+I to wszystko ✅
 
-## Ważne przy aktualizacji po błędach typu `vendor/autoload.php`
+Co dzieje się automatycznie:
+- kopiowanie `.env` (jeśli nie istnieje),
+- `composer install`,
+- `npm install`,
+- `npm run build`,
+- `php artisan key:generate`,
+- `php artisan migrate --seed`,
+- start PHP-FPM,
+- start workera kolejki,
+- start schedulera.
 
-Jeżeli wcześniej były uruchomienia z niepełnym volume/cache, zrób twardy reset:
+## Adresy
+- Aplikacja: http://localhost:8000
+- Mailpit (podgląd maili): http://localhost:8025
 
-```bash
-docker compose down -v --remove-orphans
-docker compose build --no-cache
-docker compose up -d
-```
-
-Ta konfiguracja **nie montuje kodu jako bind-volume** do kontenera app/queue/scheduler, dzięki czemu nie gubi `vendor/` i jest stabilna na Windows/macOS/Linux.
-
-## Konto administratora
-
+## Konto admina (seed)
 - email: `admin@todo-list.local`
 - hasło: `Admin123!`
 
-## Logi diagnostyczne
+## Zatrzymanie
+```bash
+docker compose down
+```
 
+## Reset danych (wraz z bazą)
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+## Podgląd logów
 ```bash
 docker compose logs -f app
-docker compose logs -f mysql
+docker compose logs -f queue
+docker compose logs -f scheduler
 ```
