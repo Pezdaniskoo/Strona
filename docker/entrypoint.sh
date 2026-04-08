@@ -3,13 +3,6 @@ set -e
 
 cd /var/www
 
-if [ ! -f artisan ]; then
-  echo "[entrypoint] Laravel skeleton not found. Bootstrapping base Laravel 11 project..."
-  rm -rf /tmp/laravel-base
-  composer create-project laravel/laravel:^11.0 /tmp/laravel-base --no-interaction
-  rsync -a --ignore-existing /tmp/laravel-base/ /var/www/
-fi
-
 if [ ! -f .env ]; then
   cp .env.example .env
 fi
@@ -29,17 +22,12 @@ if [ ! -f public/build/manifest.json ]; then
   npm run build
 fi
 
-php artisan key:generate --force --no-interaction || true
+php artisan key:generate --force --no-interaction
 
 until php artisan migrate --force --seed --no-interaction; do
   echo "[entrypoint] Waiting for database..."
   sleep 3
 done
-
-if [ "$#" -gt 0 ]; then
-  echo "[entrypoint] Bootstrapping finished. Starting: $*"
-  exec "$@"
-fi
 
 echo "[entrypoint] Bootstrapping finished. Starting php-fpm..."
 exec php-fpm
